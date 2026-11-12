@@ -1,0 +1,4 @@
+well_name,depth_top,depth_base,label,reviewer,date,notes
+WELL_E,8000.0,9050.0,0,P.Engineer,2026-10-14,Acceptable log
+WELL_E,9050.0,9200.0,2,P.Engineer,2026-10-14,Significant borehole enlargement (washout)
+WELL_E,9200.0,11000.0,0,P.Engineer,2026-10-14,Acceptable lower interval

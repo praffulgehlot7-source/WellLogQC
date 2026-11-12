@@ -1,0 +1,36 @@
+# Well Log QC — .gitignore
+
+# Virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Auto-generated outputs (never commit these as data truth)
+outputs/
+data/processed/
+welllogqc/data/processed/
+*.parquet
+
+# Held-out test data vault — extra protection layer
+# data/raw/test/   <-- intentionally NOT ignored; it stays in the repo
+#                      but should never be opened until Stage 9
+
+# Saved models (large binary files)
+models/*.pkl
+models/*.joblib
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Tools, binaries and caches
+tools/
+.pytest_cache/
+*.egg-info/
+*.log

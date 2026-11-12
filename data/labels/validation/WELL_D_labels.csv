@@ -1,0 +1,6 @@
+well_name,depth_top,depth_base,label,reviewer,date,notes
+WELL_D,8000.0,9200.0,0,P.Engineer,2026-10-14,Acceptable upper interval
+WELL_D,9200.0,9250.0,1,P.Engineer,2026-10-14,Tight hole interval (CALI < bit size); potential tool drag/stick risk
+WELL_D,9250.0,9600.0,0,P.Engineer,2026-10-14,Acceptable intermediate interval
+WELL_D,9600.0,9620.0,2,P.Engineer,2026-10-14,Density tool signal dropout / null data gap
+WELL_D,9620.0,11000.0,0,P.Engineer,2026-10-14,Acceptable lower interval

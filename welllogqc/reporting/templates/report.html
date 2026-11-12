@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Well Log QC & Characterisation Report - {{ well_name }}</title>
+    <!-- Bootstrap CDN for styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: #212529;
+            background-color: #f8f9fa;
+            padding-bottom: 50px;
+        }
+        .report-container {
+            max-width: 1100px;
+            margin: 30px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            padding: 40px;
+        }
+        .section-header {
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 8px;
+            margin-top: 35px;
+            margin-bottom: 20px;
+            color: #0b5ed7;
+            font-weight: 600;
+        }
+        .header-box {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #ffffff;
+            border-radius: 6px;
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+        .header-box h1 {
+            font-size: 2rem;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+        .footer-disclaimer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .table th {
+            background-color: #e9ecef;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .table td {
+            font-size: 0.88rem;
+            vertical-align: middle;
+        }
+        .row-critical {
+            background-color: #f8d7da !important;
+            color: #842029;
+        }
+        .row-warning {
+            background-color: #fff3cd !important;
+            color: #664d03;
+        }
+        .row-info {
+            background-color: #cff4fc !important;
+            color: #055160;
+        }
+        .plot-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .plot-container img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+<div class="container report-container">
+    <!-- Well Header -->
+    <div class="header-box">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1>{{ well_name }}</h1>
+                <p class="mb-0 text-light opacity-75">Automated Well-Log QC & Formation Evaluation Report</p>
+            </div>
+            <div class="text-end">
+                <span class="badge bg-light text-dark px-3 py-2 fs-6">Date: {{ report_date }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ingestion Summary -->
+    <h3 class="section-header">1. Ingestion Summary</h3>
+    <div class="card p-3 mb-4 bg-light border-0">
+        {{ ingestion|safe }}
+    </div>
+
+    <!-- QC Flags Table -->
+    <h3 class="section-header">2. Rule-Based Quality Control Flags</h3>
+    <p class="text-muted small mb-3">
+        Severity legend:
+        <span class="badge bg-danger">CRITICAL</span> Red (severe defect / unusable) &nbsp;|&nbsp;
+        <span class="badge bg-warning text-dark">WARNING</span> Orange (questionable / caution) &nbsp;|&nbsp;
+        <span class="badge bg-info text-dark">INFO</span> Blue (informational notice)
+    </p>
+    <div class="table-responsive mb-4">
+        {{ flags_table|safe }}
+    </div>
+
+    <!-- Composite Log Plot -->
+    <h3 class="section-header">3. Composite Well-Log Display</h3>
+    <div class="plot-container">
+        {% if plot_b64 %}
+            <img src="data:image/png;base64,{{ plot_b64 }}" alt="Composite Log Plot for {{ well_name }}">
+        {% else %}
+            <div class="alert alert-secondary text-center py-4">No log plot provided or plot generation skipped.</div>
+        {% endif %}
+    </div>
+
+    <!-- Petrophysics Evaluation -->
+    <h3 class="section-header">4. Petrophysical Interpretation</h3>
+    <div class="table-responsive mb-4">
+        {{ petro_table|safe }}
+    </div>
+
+    <!-- NTG Summary -->
+    <h3 class="section-header">5. Net-to-Gross (NTG) & Reservoir Summary</h3>
+    <div class="card p-3 mb-4 bg-light border-0">
+        {{ ntg_summary|safe }}
+    </div>
+
+    <!-- ML Predictions -->
+    <h3 class="section-header">6. Machine Learning QC Risk Prediction</h3>
+    <div class="card p-3 mb-4 bg-light border-0">
+        {{ ml_section|safe }}
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-disclaimer">
+        <p class="mb-1 fw-bold">This report is a preliminary assessment. Professional petrophysicist review required.</p>
+        <p class="mb-0 text-muted small">Generated automatically by WellLogQC Pipeline | &copy; Reservoir Characterisation Systems</p>
+    </div>
+</div>
+</body>
+</html>

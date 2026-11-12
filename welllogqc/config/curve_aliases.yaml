@@ -1,0 +1,88 @@
+# curve_aliases.yaml
+# ------------------
+# Maps every known vendor / tool mnemonic to a canonical name used
+# internally throughout the application.
+#
+# HOW TO READ THIS FILE:
+#   canonical_name:
+#     - alias1
+#     - alias2
+#     ...
+#
+# The application will search for aliases in order (top-to-bottom within
+# each group) and use the FIRST match found in a given LAS file.
+# If a LAS file uses a name not listed here, the user will be prompted
+# to confirm or add a mapping rather than silently ignoring the curve.
+
+DEPT:
+  - DEPT
+  - DEPTH
+  - MD
+  - DEPTH_MD
+
+GR:
+  - GR
+  - GRC          # corrected GR
+  - GRD          # density-tool GR
+  - SGR          # spectral GR (total)
+  - CGR          # computed GR
+
+CALI:
+  - CALI
+  - CAL
+  - CALX
+  - C1
+  - C2
+  - HCAL
+
+BS:
+  - BS
+  - BIT
+  - BITSIZE
+  - DIAM
+
+RHOB:
+  - RHOB
+  - DEN
+  - RHOZ
+  - RHOBT
+  - DENB
+
+NPHI:
+  - NPHI
+  - TNPH
+  - NEUT
+  - CNL
+  - CNCF
+  - NPOR
+
+RT:
+  - RT
+  - ILD
+  - LLD
+  - AT90
+  - M2RX
+  - HDRS
+  - RDEP
+  - RD
+
+RS:
+  - RS
+  - ILS
+  - LLS
+  - AT10
+  - RSHA
+  - RMED
+
+DT:
+  - DT
+  - AC
+  - DTC
+  - DTCO
+  - DTCO_2
+  - SLOWP
+
+PEF:
+  - PEF
+  - PE
+  - PEFZ

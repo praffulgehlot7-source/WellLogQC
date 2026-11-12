@@ -1,0 +1,4 @@
+well_name,depth_top,depth_base,label,reviewer,date,notes
+WELL_B,8000.0,8800.0,0,P.Engineer,2026-10-14,Acceptable upper section
+WELL_B,8800.0,9000.0,2,P.Engineer,2026-10-14,Severe borehole washout (CALI - BS > 2 in); pad tools likely affected
+WELL_B,9000.0,11000.0,0,P.Engineer,2026-10-14,Acceptable lower section with minor isolated spikes
