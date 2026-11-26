@@ -110,14 +110,14 @@ col_desc, col_input = st.columns([1, 1], gap="medium")
 
 with col_desc:
     st.markdown(clean_html(r"""
-    <div style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 20px 24px; height: 100%; box-sizing: border-box;">
-        <div style="color: #38bdf8; font-weight: 700; font-size: 1.1rem; margin-bottom: 8px;">
+    <div class="landing-about-card">
+        <div class="landing-about-title">
             Autonomous Well Log Evaluation Engine
         </div>
-        <div style="color: #cbd5e1; font-size: 0.90rem; line-height: 1.6; margin-bottom: 12px;">
+        <div class="landing-about-text">
             An enterprise petrophysical evaluation platform built for rapid subsurface well log screening and commercial reservoir characterization.
         </div>
-        <div style="color: #94a3b8; font-size: 0.85rem; line-height: 1.6;">
+        <div class="landing-about-bullets">
             &bull; <strong>Automated QC:</strong> Range sanity, sticking sensor, and depth checks<br>
             &bull; <strong>Borehole Corrections:</strong> Dynamic mudcake and pad standoff restoration<br>
             &bull; <strong>Petrophysics:</strong> Clay volume (Vsh), density porosity (&phi;D), Archie saturation (Sw)<br>
@@ -167,15 +167,15 @@ df = active_res.df
 
 # Active Well Summary Card
 st.markdown(clean_html(f"""
-<div style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 14px 20px; margin-top: 10px; margin-bottom: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px; width: 100%; box-sizing: border-box;">
+<div class="well-summary-card">
     <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
-        <span style="color: #38bdf8; font-weight: 700; font-size: 1.05rem;">Target Well: {active_res.well_name}</span>
-        <span style="color: #cbd5e1; font-size: 0.88rem; background: #0f172a; padding: 4px 10px; border-radius: 6px; border: 1px solid #334155;">
+        <span class="well-summary-title">Target Well: {active_res.well_name}</span>
+        <span class="well-summary-pill">
             Interval: {active_res.depth_start:.1f} – {active_res.depth_stop:.1f} ft ({len(df):,} depth levels)
         </span>
     </div>
-    <div>
-        <span style="color: #cbd5e1; font-size: 0.86rem;">Available Curves: <strong style="color: #38bdf8;">{', '.join(active_res.available_curves)}</strong></span>
+    <div class="well-summary-curves">
+        Available Curves: <strong>{', '.join(active_res.available_curves)}</strong>
     </div>
 </div>
 """), unsafe_allow_html=True)
@@ -289,11 +289,11 @@ if st.session_state.analysis_done and prox is not None:
     # Formation Verdict Card
     tier = prox.get("reservoir_tier", "Commercial Reservoir")
     st.markdown(clean_html(f"""
-    <div style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 18px 24px; margin-top: 14px; margin-bottom: 22px;">
-        <div style="color: #38bdf8; font-weight: 700; font-size: 1.05rem; margin-bottom: 8px;">
+    <div class="verdict-banner-card">
+        <div class="verdict-banner-title">
             Verdict: {tier}
         </div>
-        <div style="color: #cbd5e1; font-size: 0.92rem; line-height: 1.6;">
+        <div class="verdict-banner-body">
             <strong>What this means for your well:</strong><br>
             - Target well <strong>{active_res.well_name}</strong> was evaluated across the logged section from 
             <strong>{active_res.depth_start:.1f} ft</strong> to <strong>{active_res.depth_stop:.1f} ft</strong>.<br>
@@ -310,14 +310,14 @@ if st.session_state.analysis_done and prox is not None:
         rt_boost = env_pkg.get("mean_resistivity_boost_pct", 0.0)
         w_levels = env_pkg.get("washout_levels_count", 0)
         st.markdown(clean_html(f"""
-        <div style="background: rgba(14, 165, 233, 0.08); border-left: 4px solid #0ea5e9; border-top: 1px solid #334155; border-right: 1px solid #334155; border-bottom: 1px solid #334155; border-radius: 6px; padding: 14px 20px; margin-top: 10px; margin-bottom: 16px;">
+        <div class="env-corr-banner">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
-                <strong style="color: #38bdf8; font-size: 0.96rem;">Automated Borehole Environmental Corrections Active</strong>
-                <span style="font-size: 0.78rem; font-weight: 700; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 3px 10px; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.3);">
+                <strong class="env-corr-title">Automated Borehole Environmental Corrections Active</strong>
+                <span class="env-corr-badge">
                     PHYSICS-BASED STANDOFF COMPENSATION APPLIED
                 </span>
             </div>
-            <div style="color: #cbd5e1; font-size: 0.88rem; line-height: 1.5;">
+            <div class="env-corr-body">
                 When the caliper flagged borehole breakouts and washouts (CALI > BS), the system automatically applied physics-based mudcake and borehole-fluid corrections:
                 <strong>Bulk Density (RHOB)</strong> was restored by an average of <strong>+{dens_corr:.3f} g/cm3</strong> (neutralizing pad standoff), and 
                 <strong>Deep Resistivity (RT)</strong> was boosted by <strong>+{rt_boost:.1f}%</strong> across <strong>{w_levels} washout depth levels</strong> (countering conductive mud shunting).
@@ -696,11 +696,11 @@ if st.session_state.analysis_done and prox is not None:
             for concl in conclusions:
                 sev_color = "#10b981" if concl["severity"] == "SUCCESS" else ("#f59e0b" if concl["severity"] == "WARNING" else "#38bdf8")
                 st.markdown(clean_html(f"""
-                <div style="background: #1e293b; border-left: 4px solid {sev_color}; border-radius: 0 6px 6px 0; padding: 12px 18px; margin-bottom: 10px;">
-                    <div style="color: {sev_color}; font-weight: 700; font-size: 0.92rem; margin-bottom: 4px;">
+                <div class="multicurve-concl-card" style="border-left: 4px solid {sev_color} !important;">
+                    <div class="multicurve-concl-title" style="color: {sev_color} !important;">
                         {concl['title']}
                     </div>
-                    <div style="color: #cbd5e1; font-size: 0.86rem; line-height: 1.5;">
+                    <div class="multicurve-concl-text">
                         {concl['text']}
                     </div>
                 </div>
@@ -748,11 +748,11 @@ if st.session_state.analysis_done and prox is not None:
     if st.session_state.get("show_benchmark_comparison", False):
         st.dataframe(comp_df, use_container_width=True, hide_index=True)
         st.markdown(clean_html(f"""
-        <div style="background: rgba(56, 189, 248, 0.08); border-left: 4px solid #38bdf8; border-radius: 0 8px 8px 0; padding: 14px 20px; margin-top: 14px; margin-bottom: 18px;">
-            <div style="color: #38bdf8; font-weight: 700; font-size: 0.96rem; margin-bottom: 6px;">
+        <div class="benchmark-summary-card">
+            <div class="benchmark-summary-title">
                 Key Takeaways & Comparison Summary vs. Ideal Standard
             </div>
-            <div style="color: #cbd5e1; font-size: 0.88rem; line-height: 1.55;">
+            <div class="benchmark-summary-text">
                 The comparison table above contrasts your given well data with world-class clastic reservoir standards ({prox['composite_reservoir_proximity_pct']}% composite match, <strong>{prox['reservoir_tier']}</strong>).
                 Review the <strong>Key Comparison Notes & Concluding Remarks</strong> column to inspect specific operational impacts (borehole breakout, clay choke, porosity storage, or water cut risks) for every measured and calculated parameter.
             </div>
@@ -791,11 +791,11 @@ if st.session_state.analysis_done and prox is not None:
             st.markdown(f"**Identified {len(crit_rows)} high-priority intervals requiring operational intervention:**")
             for cr in crit_rows[:5]:
                 st.markdown(clean_html(f"""
-                <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; border-radius: 0 6px 6px 0; padding: 12px 18px; margin-bottom: 10px;">
-                    <div style="color: #ef4444; font-weight: 700; font-size: 0.92rem; margin-bottom: 4px;">
+                <div class="review-alert-card">
+                    <div class="review-alert-title">
                         Depth {cr['Depth Interval (ft)']} ({cr['Thickness']}) &bull; {cr['Primary Anomaly']} [{cr['Severity']}]
                     </div>
-                    <div style="color: #cbd5e1; font-size: 0.86rem; line-height: 1.5;">
+                    <div class="review-alert-text">
                         <strong>Root Cause:</strong> {cr['Why Review is Required (Plain English)']}<br>
                         <strong>Remedial Action:</strong> {cr['Recommended Action']}
                     </div>

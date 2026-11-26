@@ -1,31 +1,18 @@
 """
 welllogqc/app/ui_theme.py
 =========================
-Professional enterprise styling, color palette, and SVG icon system.
-Strictly zero emojis. All visual cues use clean SVG icons and executive badges.
+Enterprise design system for WellLogQC formation evaluation.
+Full contrast and legibility across both Light (Day) and Dark (Night) themes.
+Completely eliminates sidebar, removes sports animations, and enforces professional branding.
+Zero emojis, strictly professional styling.
 """
 
 import streamlit as st
 
-__all__ = [
-    "clean_html",
-    "inject_custom_theme",
-    "render_page_header",
-    "render_kpi",
-    "render_section_header",
-    "render_sidebar_header",
-    "render_advisory_card",
-    "get_petroleum_loader_html",
-    "ICONS",
-    "PALETTE",
-    "CUSTOM_CSS",
-]
-
-# Enterprise Color Palette
+# Color Palette Definitions
 PALETTE = {
-    "primary": "#0284c7",       # Sky 600
-    "primary_dark": "#0369a1",  # Sky 700
-    "secondary": "#334155",    # Slate 700
+    "primary": "#0284c7",      # Sky 600
+    "primary_dark": "#0369a1", # Sky 700
     "bg_dark": "#0f172a",      # Slate 900
     "card_bg": "#1e293b",      # Slate 800
     "card_border": "#334155",  # Slate 700
@@ -55,8 +42,8 @@ ICONS = {
     "compass": """<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>"""
 }
 
-CUSTOM_CSS = """
-<style>
+# Core stylesheet rules (pure CSS, no style tags)
+CUSTOM_CSS_RULES = """
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 html, body, [class*="css"] {
@@ -105,7 +92,51 @@ button[data-testid="baseButton-headerAction"] {
     visibility: visible !important;
 }
 
-/* ── 3. ENTERPRISE HEADER ── */
+/* ── 3. SECTION HEADERS (100% VISIBLE IN LIGHT & DARK THEMES) ── */
+.section-hdr-container {
+    margin-top: 24px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.section-hdr-title {
+    font-size: 1.18rem;
+    font-weight: 700;
+    color: #f8fafc;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.section-hdr-icon {
+    flex-shrink: 0;
+    display: inline-flex;
+    color: #0284c7;
+}
+
+.section-hdr-icon svg {
+    stroke: #0284c7 !important;
+}
+
+.section-hdr-text {
+    white-space: normal;
+    line-height: 1.3;
+    color: inherit;
+}
+
+.section-hdr-sub {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    margin-top: 4px;
+    white-space: normal;
+    line-height: 1.4;
+}
+
+/* ── 4. ENTERPRISE HEADER ── */
 .corporate-header {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     border: 1px solid #334155;
@@ -147,7 +178,7 @@ button[data-testid="baseButton-headerAction"] {
     line-height: 1.4;
 }
 
-/* ── 4. BUTTONS & UI CONTROLS ── */
+/* ── 5. BUTTONS & UI CONTROLS ── */
 .stButton > button {
     white-space: nowrap !important;
     font-weight: 600 !important;
@@ -156,7 +187,7 @@ button[data-testid="baseButton-headerAction"] {
     min-height: 42px !important;
 }
 
-/* ── 5. KPI CARDS ── */
+/* ── 6. KPI CARDS ── */
 .kpi-card {
     background: #1e293b;
     border: 1px solid #334155;
@@ -196,7 +227,7 @@ button[data-testid="baseButton-headerAction"] {
     line-height: 1.3;
 }
 
-/* ── 6. ADVISORY & RECOMMENDATION CARDS ── */
+/* ── 7. ADVISORY & RECOMMENDATION CARDS ── */
 .advisory-box {
     background: #0f172a;
     border-left: 4px solid #0284c7;
@@ -234,84 +265,244 @@ button[data-testid="baseButton-headerAction"] {
     border-left: 4px solid #0284c7 !important;
 }
 
-/* ── 7. LIGHT & DARK THEME ADAPTABILITY (ALL LINES VISIBLE IN BOTH THEMES) ── */
-@media (prefers-color-scheme: light) {
-    .corporate-header {
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
-        border: 1px solid #cbd5e1 !important;
-    }
-    .corporate-header h1 {
-        color: #0f172a !important;
-    }
-    .corporate-header p {
-        color: #475569 !important;
-    }
-    .kpi-card {
-        background: #ffffff !important;
-        border: 1px solid #cbd5e1 !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    .kpi-label {
-        color: #475569 !important;
-    }
-    .kpi-value {
-        color: #0f172a !important;
-    }
-    .kpi-sub {
-        color: #64748b !important;
-    }
-    .advisory-box {
-        background: #ffffff !important;
-        border-top: 1px solid #cbd5e1 !important;
-        border-right: 1px solid #cbd5e1 !important;
-        border-bottom: 1px solid #cbd5e1 !important;
-    }
-    .advisory-title {
-        color: #0369a1 !important;
-    }
-    .advisory-body {
-        color: #334155 !important;
-    }
+/* ── 8. LANDING & WELL SUMMARY CARDS ── */
+.landing-about-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 20px 24px;
+    height: 100%;
+    box-sizing: border-box;
+}
+.landing-about-title {
+    color: #38bdf8;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+.landing-about-text {
+    color: #cbd5e1;
+    font-size: 0.90rem;
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+.landing-about-bullets {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    line-height: 1.6;
 }
 
-[data-theme="light"] .corporate-header {
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
-    border: 1px solid #cbd5e1 !important;
+.well-summary-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 14px 20px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    box-sizing: border-box;
 }
-[data-theme="light"] .corporate-header h1 {
-    color: #0f172a !important;
+.well-summary-title {
+    color: #38bdf8;
+    font-weight: 700;
+    font-size: 1.05rem;
 }
-[data-theme="light"] .corporate-header p {
-    color: #475569 !important;
+.well-summary-pill {
+    color: #cbd5e1;
+    font-size: 0.88rem;
+    background: #0f172a;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid #334155;
 }
-[data-theme="light"] .kpi-card {
-    background: #ffffff !important;
-    border: 1px solid #cbd5e1 !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+.well-summary-curves {
+    color: #cbd5e1;
+    font-size: 0.86rem;
 }
-[data-theme="light"] .kpi-label {
-    color: #475569 !important;
-}
-[data-theme="light"] .kpi-value {
-    color: #0f172a !important;
-}
-[data-theme="light"] .kpi-sub {
-    color: #64748b !important;
-}
-[data-theme="light"] .advisory-box {
-    background: #ffffff !important;
-    border-top: 1px solid #cbd5e1 !important;
-    border-right: 1px solid #cbd5e1 !important;
-    border-bottom: 1px solid #cbd5e1 !important;
-}
-[data-theme="light"] .advisory-title {
-    color: #0369a1 !important;
-}
-[data-theme="light"] .advisory-body {
-    color: #334155 !important;
+.well-summary-curves strong {
+    color: #38bdf8;
 }
 
-/* ── 8. FORMATION EVALUATION PETROLEUM LOADER ANIMATION ── */
+.verdict-banner-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 18px 24px;
+    margin-top: 14px;
+    margin-bottom: 22px;
+}
+.verdict-banner-title {
+    color: #38bdf8;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 8px;
+}
+.verdict-banner-body {
+    color: #cbd5e1;
+    font-size: 0.92rem;
+    line-height: 1.6;
+}
+
+.env-corr-banner {
+    background: rgba(14, 165, 233, 0.08);
+    border-left: 4px solid #0ea5e9;
+    border-top: 1px solid #334155;
+    border-right: 1px solid #334155;
+    border-bottom: 1px solid #334155;
+    border-radius: 6px;
+    padding: 14px 20px;
+    margin-top: 10px;
+    margin-bottom: 16px;
+}
+.env-corr-title {
+    color: #38bdf8;
+    font-size: 0.96rem;
+}
+.env-corr-badge {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.15);
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.env-corr-body {
+    color: #cbd5e1;
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.multicurve-concl-card {
+    background: #1e293b;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 18px;
+    margin-bottom: 10px;
+    border-top: 1px solid #334155;
+    border-right: 1px solid #334155;
+    border-bottom: 1px solid #334155;
+}
+.multicurve-concl-title {
+    font-weight: 700;
+    font-size: 0.92rem;
+    margin-bottom: 4px;
+}
+.multicurve-concl-text {
+    color: #cbd5e1;
+    font-size: 0.86rem;
+    line-height: 1.5;
+}
+
+.benchmark-summary-card {
+    background: #1e293b;
+    border-left: 4px solid #38bdf8;
+    border-radius: 0 8px 8px 0;
+    padding: 14px 20px;
+    margin-top: 14px;
+    margin-bottom: 18px;
+    border-top: 1px solid #334155;
+    border-right: 1px solid #334155;
+    border-bottom: 1px solid #334155;
+}
+.benchmark-summary-title {
+    color: #38bdf8;
+    font-weight: 700;
+    font-size: 0.96rem;
+    margin-bottom: 6px;
+}
+.benchmark-summary-text {
+    color: #cbd5e1;
+    font-size: 0.88rem;
+    line-height: 1.55;
+}
+
+.review-alert-card {
+    background: rgba(239, 68, 68, 0.1);
+    border-left: 4px solid #ef4444;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 18px;
+    margin-bottom: 10px;
+    border-top: 1px solid rgba(239, 68, 68, 0.2);
+    border-right: 1px solid rgba(239, 68, 68, 0.2);
+    border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+}
+.review-alert-title {
+    color: #ef4444;
+    font-weight: 700;
+    font-size: 0.92rem;
+    margin-bottom: 4px;
+}
+.review-alert-text {
+    color: #cbd5e1;
+    font-size: 0.86rem;
+    line-height: 1.5;
+}
+
+.guideline-banner-card {
+    background: #1e293b;
+    border-left: 4px solid #0284c7;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 18px;
+    margin-bottom: 14px;
+    border-top: 1px solid #334155;
+    border-right: 1px solid #334155;
+    border-bottom: 1px solid #334155;
+}
+.guideline-banner-title {
+    color: #38bdf8;
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+}
+.guideline-banner-body {
+    color: #cbd5e1;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+.guideline-box {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 14px;
+    margin-bottom: 10px;
+    color: #cbd5e1;
+}
+.guideline-box-inner {
+    background: #1e293b;
+    border-radius: 4px;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #334155;
+}
+.guideline-mean-high {
+    background: #0f172a;
+    border-left: 4px solid #ef4444;
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+    color: #cbd5e1;
+}
+.guideline-mean-low {
+    background: #0f172a;
+    border-left: 4px solid #10b981;
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+    color: #cbd5e1;
+}
+.guideline-traps {
+    background: #0f172a;
+    border-left: 4px solid #f59e0b;
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+    margin-top: 6px;
+    color: #cbd5e1;
+}
+
+/* ── 9. FORMATION EVALUATION PETROLEUM LOADER ANIMATION ── */
 @keyframes wireline-scan {
     0% { transform: translateY(0px); }
     50% { transform: translateY(40px); }
@@ -354,28 +545,508 @@ button[data-testid="baseButton-headerAction"] {
     color: #94a3b8;
     margin-bottom: 8px;
 }
-</style>
+
+/* ── 10. COMPREHENSIVE LIGHT / DAY THEME ADAPTABILITY ── */
+@media (prefers-color-scheme: light) {
+    .section-hdr-container {
+        border-bottom: 1px solid #cbd5e1 !important;
+    }
+    .section-hdr-title,
+    .section-hdr-text {
+        color: #0f172a !important;
+    }
+    .section-hdr-sub {
+        color: #475569 !important;
+    }
+    .corporate-header {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+    .corporate-header h1 {
+        color: #0f172a !important;
+    }
+    .corporate-header p {
+        color: #475569 !important;
+    }
+    .kpi-card {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+    }
+    .kpi-label {
+        color: #475569 !important;
+    }
+    .kpi-value {
+        color: #0f172a !important;
+    }
+    .kpi-sub {
+        color: #64748b !important;
+    }
+    .advisory-box {
+        background: #ffffff !important;
+        border-top: 1px solid #cbd5e1 !important;
+        border-right: 1px solid #cbd5e1 !important;
+        border-bottom: 1px solid #cbd5e1 !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+    }
+    .advisory-title {
+        color: #0369a1 !important;
+    }
+    .advisory-body {
+        color: #334155 !important;
+    }
+    .landing-about-card {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+    }
+    .landing-about-title {
+        color: #0284c7 !important;
+    }
+    .landing-about-text {
+        color: #334155 !important;
+    }
+    .landing-about-bullets {
+        color: #475569 !important;
+    }
+    .well-summary-card {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+    }
+    .well-summary-title {
+        color: #0284c7 !important;
+    }
+    .well-summary-pill {
+        background: #f1f5f9 !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #334155 !important;
+    }
+    .well-summary-curves {
+        color: #475569 !important;
+    }
+    .well-summary-curves strong {
+        color: #0284c7 !important;
+    }
+    .verdict-banner-card {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+    }
+    .verdict-banner-title {
+        color: #0284c7 !important;
+    }
+    .verdict-banner-body {
+        color: #334155 !important;
+    }
+    .env-corr-banner {
+        background: #f0f9ff !important;
+        border-left: 4px solid #0284c7 !important;
+        border-top: 1px solid #bae6fd !important;
+        border-right: 1px solid #bae6fd !important;
+        border-bottom: 1px solid #bae6fd !important;
+    }
+    .env-corr-title {
+        color: #0369a1 !important;
+    }
+    .env-corr-body {
+        color: #334155 !important;
+    }
+    .multicurve-concl-card {
+        background: #ffffff !important;
+        border-top: 1px solid #cbd5e1 !important;
+        border-right: 1px solid #cbd5e1 !important;
+        border-bottom: 1px solid #cbd5e1 !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+    }
+    .multicurve-concl-text {
+        color: #334155 !important;
+    }
+    .benchmark-summary-card {
+        background: #f0f9ff !important;
+        border-left: 4px solid #0284c7 !important;
+        border-top: 1px solid #cbd5e1 !important;
+        border-right: 1px solid #cbd5e1 !important;
+        border-bottom: 1px solid #cbd5e1 !important;
+    }
+    .benchmark-summary-title {
+        color: #0369a1 !important;
+    }
+    .benchmark-summary-text {
+        color: #334155 !important;
+    }
+    .review-alert-card {
+        background: #fff5f5 !important;
+        border-left: 4px solid #ef4444 !important;
+        border-top: 1px solid #fecaca !important;
+        border-right: 1px solid #fecaca !important;
+        border-bottom: 1px solid #fecaca !important;
+    }
+    .review-alert-text {
+        color: #334155 !important;
+    }
+    .petro-loader-card {
+        background: #ffffff !important;
+        border: 1px solid #0284c7 !important;
+        box-shadow: 0 4px 20px rgba(2, 132, 199, 0.12) !important;
+    }
+    .petro-loader-title {
+        color: #0284c7 !important;
+    }
+    .petro-loader-sub {
+        color: #475569 !important;
+    }
+    .guideline-banner-card {
+        background: #f0f9ff !important;
+        border-left: 4px solid #0284c7 !important;
+        border-top: 1px solid #bae6fd !important;
+        border-right: 1px solid #bae6fd !important;
+        border-bottom: 1px solid #bae6fd !important;
+    }
+    .guideline-banner-title {
+        color: #0369a1 !important;
+    }
+    .guideline-banner-body {
+        color: #334155 !important;
+    }
+    .guideline-box {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #334155 !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+    }
+    .guideline-box-inner {
+        background: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+    .guideline-mean-high {
+        background: #fff5f5 !important;
+        border-left: 4px solid #ef4444 !important;
+        border-top: 1px solid #fecaca !important;
+        border-right: 1px solid #fecaca !important;
+        border-bottom: 1px solid #fecaca !important;
+        color: #334155 !important;
+    }
+    .guideline-mean-low {
+        background: #f0fdf4 !important;
+        border-left: 4px solid #10b981 !important;
+        border-top: 1px solid #bbf7d0 !important;
+        border-right: 1px solid #bbf7d0 !important;
+        border-bottom: 1px solid #bbf7d0 !important;
+        color: #334155 !important;
+    }
+    .guideline-traps {
+        background: #fffbeb !important;
+        border-left: 4px solid #f59e0b !important;
+        border-top: 1px solid #fef3c7 !important;
+        border-right: 1px solid #fef3c7 !important;
+        border-bottom: 1px solid #fef3c7 !important;
+        color: #334155 !important;
+    }
+}
+
+/* Also apply when Streamlit UI sets data-theme="light" or .st-light-theme */
+[data-theme="light"] .section-hdr-container,
+.st-light-theme .section-hdr-container {
+    border-bottom: 1px solid #cbd5e1 !important;
+}
+[data-theme="light"] .section-hdr-title,
+[data-theme="light"] .section-hdr-text,
+.st-light-theme .section-hdr-title,
+.st-light-theme .section-hdr-text {
+    color: #0f172a !important;
+}
+[data-theme="light"] .section-hdr-sub,
+.st-light-theme .section-hdr-sub {
+    color: #475569 !important;
+}
+[data-theme="light"] .corporate-header,
+.st-light-theme .corporate-header {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+    border: 1px solid #cbd5e1 !important;
+}
+[data-theme="light"] .corporate-header h1,
+.st-light-theme .corporate-header h1 {
+    color: #0f172a !important;
+}
+[data-theme="light"] .corporate-header p,
+.st-light-theme .corporate-header p {
+    color: #475569 !important;
+}
+[data-theme="light"] .kpi-card,
+.st-light-theme .kpi-card {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+}
+[data-theme="light"] .kpi-label,
+.st-light-theme .kpi-label {
+    color: #475569 !important;
+}
+[data-theme="light"] .kpi-value,
+.st-light-theme .kpi-value {
+    color: #0f172a !important;
+}
+[data-theme="light"] .kpi-sub,
+.st-light-theme .kpi-sub {
+    color: #64748b !important;
+}
+[data-theme="light"] .advisory-box,
+.st-light-theme .advisory-box {
+    background: #ffffff !important;
+    border-top: 1px solid #cbd5e1 !important;
+    border-right: 1px solid #cbd5e1 !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+}
+[data-theme="light"] .advisory-title,
+.st-light-theme .advisory-title {
+    color: #0369a1 !important;
+}
+[data-theme="light"] .advisory-body,
+.st-light-theme .advisory-body {
+    color: #334155 !important;
+}
+[data-theme="light"] .landing-about-card,
+.st-light-theme .landing-about-card {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+}
+[data-theme="light"] .landing-about-title,
+.st-light-theme .landing-about-title {
+    color: #0284c7 !important;
+}
+[data-theme="light"] .landing-about-text,
+.st-light-theme .landing-about-text {
+    color: #334155 !important;
+}
+[data-theme="light"] .landing-about-bullets,
+.st-light-theme .landing-about-bullets {
+    color: #475569 !important;
+}
+[data-theme="light"] .well-summary-card,
+.st-light-theme .well-summary-card {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+}
+[data-theme="light"] .well-summary-title,
+.st-light-theme .well-summary-title {
+    color: #0284c7 !important;
+}
+[data-theme="light"] .well-summary-pill,
+.st-light-theme .well-summary-pill {
+    background: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
+}
+[data-theme="light"] .well-summary-curves,
+.st-light-theme .well-summary-curves {
+    color: #475569 !important;
+}
+[data-theme="light"] .well-summary-curves strong,
+.st-light-theme .well-summary-curves strong {
+    color: #0284c7 !important;
+}
+[data-theme="light"] .verdict-banner-card,
+.st-light-theme .verdict-banner-card {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+}
+[data-theme="light"] .verdict-banner-title,
+.st-light-theme .verdict-banner-title {
+    color: #0284c7 !important;
+}
+[data-theme="light"] .verdict-banner-body,
+.st-light-theme .verdict-banner-body {
+    color: #334155 !important;
+}
+[data-theme="light"] .env-corr-banner,
+.st-light-theme .env-corr-banner {
+    background: #f0f9ff !important;
+    border-left: 4px solid #0284c7 !important;
+    border-top: 1px solid #bae6fd !important;
+    border-right: 1px solid #bae6fd !important;
+    border-bottom: 1px solid #bae6fd !important;
+}
+[data-theme="light"] .env-corr-title,
+.st-light-theme .env-corr-title {
+    color: #0369a1 !important;
+}
+[data-theme="light"] .env-corr-body,
+.st-light-theme .env-corr-body {
+    color: #334155 !important;
+}
+[data-theme="light"] .multicurve-concl-card,
+.st-light-theme .multicurve-concl-card {
+    background: #ffffff !important;
+    border-top: 1px solid #cbd5e1 !important;
+    border-right: 1px solid #cbd5e1 !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+}
+[data-theme="light"] .multicurve-concl-text,
+.st-light-theme .multicurve-concl-text {
+    color: #334155 !important;
+}
+[data-theme="light"] .benchmark-summary-card,
+.st-light-theme .benchmark-summary-card {
+    background: #f0f9ff !important;
+    border-left: 4px solid #0284c7 !important;
+    border-top: 1px solid #cbd5e1 !important;
+    border-right: 1px solid #cbd5e1 !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+}
+[data-theme="light"] .benchmark-summary-title,
+.st-light-theme .benchmark-summary-title {
+    color: #0369a1 !important;
+}
+[data-theme="light"] .benchmark-summary-text,
+.st-light-theme .benchmark-summary-text {
+    color: #334155 !important;
+}
+[data-theme="light"] .review-alert-card,
+.st-light-theme .review-alert-card {
+    background: #fff5f5 !important;
+    border-left: 4px solid #ef4444 !important;
+    border-top: 1px solid #fecaca !important;
+    border-right: 1px solid #fecaca !important;
+    border-bottom: 1px solid #fecaca !important;
+}
+[data-theme="light"] .review-alert-text,
+.st-light-theme .review-alert-text {
+    color: #334155 !important;
+}
+[data-theme="light"] .petro-loader-card,
+.st-light-theme .petro-loader-card {
+    background: #ffffff !important;
+    border: 1px solid #0284c7 !important;
+    box-shadow: 0 4px 20px rgba(2, 132, 199, 0.12) !important;
+}
+[data-theme="light"] .petro-loader-title,
+.st-light-theme .petro-loader-title {
+    color: #0284c7 !important;
+}
+[data-theme="light"] .petro-loader-sub,
+.st-light-theme .petro-loader-sub {
+    color: #475569 !important;
+}
+[data-theme="light"] .guideline-banner-card,
+.st-light-theme .guideline-banner-card {
+    background: #f0f9ff !important;
+    border-left: 4px solid #0284c7 !important;
+    border-top: 1px solid #bae6fd !important;
+    border-right: 1px solid #bae6fd !important;
+    border-bottom: 1px solid #bae6fd !important;
+}
+[data-theme="light"] .guideline-banner-title,
+.st-light-theme .guideline-banner-title {
+    color: #0369a1 !important;
+}
+[data-theme="light"] .guideline-banner-body,
+.st-light-theme .guideline-banner-body {
+    color: #334155 !important;
+}
+[data-theme="light"] .guideline-box,
+.st-light-theme .guideline-box {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+}
+[data-theme="light"] .guideline-box-inner,
+.st-light-theme .guideline-box-inner {
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+}
+[data-theme="light"] .guideline-mean-high,
+.st-light-theme .guideline-mean-high {
+    background: #fff5f5 !important;
+    border-left: 4px solid #ef4444 !important;
+    border-top: 1px solid #fecaca !important;
+    border-right: 1px solid #fecaca !important;
+    border-bottom: 1px solid #fecaca !important;
+    color: #334155 !important;
+}
+[data-theme="light"] .guideline-mean-low,
+.st-light-theme .guideline-mean-low {
+    background: #f0fdf4 !important;
+    border-left: 4px solid #10b981 !important;
+    border-top: 1px solid #bbf7d0 !important;
+    border-right: 1px solid #bbf7d0 !important;
+    border-bottom: 1px solid #bbf7d0 !important;
+    color: #334155 !important;
+}
+[data-theme="light"] .guideline-traps,
+.st-light-theme .guideline-traps {
+    background: #fffbeb !important;
+    border-left: 4px solid #f59e0b !important;
+    border-top: 1px solid #fef3c7 !important;
+    border-right: 1px solid #fef3c7 !important;
+    border-bottom: 1px solid #fef3c7 !important;
+    color: #334155 !important;
+}
 """
 
+CUSTOM_CSS = CUSTOM_CSS_RULES
+
 def clean_html(html: str) -> str:
-    """Strip leading indentation and empty lines so CommonMark never parses HTML as a code block."""
+    """
+    Strip leading indentation and empty lines from every line.
+    This guarantees CommonMark never parses HTML or CSS as an indented code block.
+    """
     return "\n".join(line.lstrip() for line in html.splitlines() if line.strip())
 
 def inject_custom_theme(analysis_done: bool = False):
-    """Inject corporate CSS stylesheet into Streamlit app with conditional print menu control."""
-    css = CUSTOM_CSS
+    """
+    Inject corporate CSS stylesheet into Streamlit app with zero raw text leaks.
+    Cleanly hides Print option prior to analysis completion.
+    """
+    rules = [CUSTOM_CSS_RULES]
     if not analysis_done:
-        css += """
-        <style>
-        /* Hide Print option from 3-dot menu before formation analysis is completed */
-        div[data-testid="stMainMenuPopover"] li:nth-child(3),
-        div[role="menu"] [role="menuitem"]:has(span:contains("Print")),
-        button[role="menuitem"]:has(div:contains("Print")) {
-            display: none !important;
-        }
-        </style>
-        """
-    st.markdown(css, unsafe_allow_html=True)
+        rules.append("""
+div[data-testid="stMainMenuPopover"] li:nth-child(3),
+div[role="menu"] [role="menuitem"]:nth-child(3),
+li[data-testid="stMainMenuPrint"],
+button[data-testid="stMainMenuPrint"] {
+    display: none !important;
+}
+""")
+    combined_css = "\n".join(rules)
+    js_script = """
+<script>
+(function() {
+    function detectTheme() {
+        try {
+            var app = document.querySelector('.stApp') || document.body;
+            var bg = window.getComputedStyle(app).backgroundColor;
+            var rgb = bg.match(/\\d+/g);
+            if (rgb && rgb.length >= 3) {
+                var brightness = (parseInt(rgb[0])*299 + parseInt(rgb[1])*587 + parseInt(rgb[2])*114)/1000;
+                if (brightness > 130) {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    document.body.classList.add('st-light-theme');
+                    document.body.classList.remove('st-dark-theme');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    document.body.classList.add('st-dark-theme');
+                    document.body.classList.remove('st-light-theme');
+                }
+            }
+        } catch(e) {}
+    }
+    detectTheme();
+    if (window.MutationObserver) {
+        new MutationObserver(detectTheme).observe(document.body, { attributes: true, attributeFilter: ['class', 'style'] });
+    }
+    window.addEventListener('resize', detectTheme);
+})();
+</script>
+"""
+    html_block = clean_html("<style>\n" + combined_css + "\n</style>\n" + js_script)
+    st.markdown(html_block, unsafe_allow_html=True)
 
 def get_petroleum_loader_html() -> str:
     """Generate high-contrast petroleum formation evaluation loading animation."""
@@ -401,8 +1072,8 @@ def get_petroleum_loader_html() -> str:
                 <text x="25" y="134" fill="#a7f3d0" font-weight="700" font-size="9" font-family="sans-serif">Hydrocarbon Pay Zone</text>
 
                 <!-- Borehole Wellbore Walls -->
-                <line x1="124" y1="10" x2="124" y2="150" stroke="#38bdf8" stroke-width="2" stroke-dasharray="3,3"/>
-                <line x1="156" y1="10" x2="156" y2="150" stroke="#38bdf8" stroke-width="2" stroke-dasharray="3,3"/>
+                <line x1="124" y1="10" x2="124" y2="150" stroke="#0284c7" stroke-width="2" stroke-dasharray="3,3"/>
+                <line x1="156" y1="10" x2="156" y2="150" stroke="#0284c7" stroke-width="2" stroke-dasharray="3,3"/>
 
                 <!-- Wireline Cable -->
                 <line x1="140" y1="0" x2="140" y2="140" stroke="#94a3b8" stroke-width="1.5"/>
@@ -431,7 +1102,6 @@ def get_petroleum_loader_html() -> str:
 
 def render_page_header(title: str, subtitle: str, badge_text: str = None, badge_type: str = "gpu"):
     """Render a clean, corporate header with an optional status pill."""
-    inject_custom_theme()
     badge_html = ""
     if badge_text:
         icon = ICONS.get(badge_type, ICONS["gpu"])
@@ -448,13 +1118,14 @@ def render_page_header(title: str, subtitle: str, badge_text: str = None, badge_
     st.markdown(html, unsafe_allow_html=True)
 
 def render_section_header(title: str, icon_name: str = None, subtitle: str = None):
-    """Render a clean section header with an SVG icon without raw HTML leak."""
+    """Render a clean section header with an SVG icon with full light/dark theme contrast."""
     icon_svg = ICONS.get(icon_name, "") if icon_name else ""
-    sub_html = f"<div style='color: #94a3b8; font-size: 0.84rem; margin-top: 4px; white-space: normal; line-height: 1.4;'>{subtitle}</div>" if subtitle else ""
+    sub_html = f"<div class='section-hdr-sub'>{subtitle}</div>" if subtitle else ""
     html = clean_html(f"""
-    <div style="margin-top: 22px; margin-bottom: 12px; border-bottom: 1px solid #334155; padding-bottom: 8px; width: 100%; box-sizing: border-box;">
-        <div style="font-size: 1.15rem; font-weight: 700; color: #f8fafc; display: flex; align-items: center; gap: 10px; width: 100%;">
-            <span style="flex-shrink: 0; display: inline-flex;">{icon_svg}</span> <span style="white-space: normal; line-height: 1.3;">{title}</span>
+    <div class="section-hdr-container">
+        <div class="section-hdr-title">
+            <span class="section-hdr-icon">{icon_svg}</span>
+            <span class="section-hdr-text">{title}</span>
         </div>
         {sub_html}
     </div>
@@ -465,14 +1136,14 @@ def render_sidebar_header(title: str, icon_name: str = None):
     """Render a clean sidebar category header."""
     icon_svg = ICONS.get(icon_name, "") if icon_name else ""
     html = clean_html(f"""
-    <div style="font-size: 0.95rem; font-weight: 700; color: #f8fafc; display: flex; align-items: center; gap: 8px; margin-top: 14px; margin-bottom: 10px; border-bottom: 1px solid #334155; padding-bottom: 6px;">
+    <div style="font-size: 0.95rem; font-weight: 700; color: inherit; display: flex; align-items: center; gap: 8px; margin-top: 14px; margin-bottom: 10px; border-bottom: 1px solid #334155; padding-bottom: 6px;">
         {icon_svg} <span>{title}</span>
     </div>
     """)
     st.sidebar.markdown(html, unsafe_allow_html=True)
 
 def render_kpi(label: str, value: str, subtext: str = "", delta: str = None):
-    """Render an executive KPI card."""
+    """Render an executive KPI card with high contrast in all themes."""
     delta_html = f"<span style='color: #10b981; font-weight: 600;'>{delta}</span>" if delta else ""
     html = clean_html(f"""
     <div class="kpi-card">
