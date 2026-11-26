@@ -831,6 +831,122 @@ def get_guide_comparison_dataframe(available_curves: Optional[List[str]] = None)
     return pd.DataFrame(rows)
 
 
+def show_guidelines_dialog(available_curves: Optional[List[str]] = None):
+    """
+    Renders the full formation evaluation guidelines inside a Streamlit dialog modal.
+    Lists all physical min and max values, ideal ranges, cutoffs, and engineering principles.
+    """
+    import streamlit as st
+    from welllogqc.app.ui_theme import clean_html
+
+    @st.dialog("Formation Evaluation Guidelines & Log Standards", width="large")
+    def _guidelines_modal():
+        st.markdown(clean_html("""
+        <div style="background: #1e293b; border-left: 4px solid #38bdf8; border-radius: 0 6px 6px 0; padding: 12px 18px; margin-bottom: 14px;">
+            <div style="color: #38bdf8; font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">
+                Petrophysical Engineering Manual & Sensor Physical Limits
+            </div>
+            <div style="color: #cbd5e1; font-size: 0.85rem; line-height: 1.5;">
+                Every downhole wireline sensor operates on fundamental physics (nuclear scintillation, electron scattering, hydrogen index moderation, induction resistivity, and acoustic wave transit). 
+                Below are the physical minimum and maximum limits, ideal commercial baselines, and pay cutoff rules compiled from Schlumberger, AAPG, and SPWLA standards.
+            </div>
+        </div>
+        """), unsafe_allow_html=True)
+
+        all_keys = list(CURVE_KNOWLEDGE_BASE.keys())
+        if available_curves:
+            avail_upper = [c.upper().strip() for c in available_curves if c.upper().strip() in CURVE_KNOWLEDGE_BASE]
+            other_keys = [k for k in all_keys if k not in avail_upper]
+            options_keys = avail_upper + other_keys
+        else:
+            options_keys = all_keys
+
+        curve_labels = [f"{k} - {CURVE_KNOWLEDGE_BASE[k]['name']}" for k in options_keys]
+        selected_idx = st.selectbox(
+            "Select Wireline Log to Inspect",
+            range(len(options_keys)),
+            format_func=lambda i: curve_labels[i],
+            key="modal_guidelines_log_select"
+        )
+        selected_key = options_keys[selected_idx]
+        meta = CURVE_KNOWLEDGE_BASE[selected_key]
+        min_v = meta.get("min_value", "N/A")
+        max_v = meta.get("max_value", "N/A")
+        unit = meta.get("unit", "")
+
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown(clean_html(f"""
+            <div style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 14px; margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <strong style="color: #38bdf8; font-size: 1.05rem;">{selected_key} - {meta['name']}</strong>
+                    <span style="background: #1e293b; color: #cbd5e1; padding: 2px 8px; border-radius: 4px; border: 1px solid #334155; font-size: 0.8rem;">{unit}</span>
+                </div>
+                <div style="background: #1e293b; border-radius: 4px; padding: 8px; margin-bottom: 10px; border: 1px solid #334155;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 4px;">
+                        <span style="color: #94a3b8;">Physical Minimum:</span>
+                        <span style="color: #10b981; font-weight: 700;">{min_v} {unit}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.82rem;">
+                        <span style="color: #94a3b8;">Physical Maximum:</span>
+                        <span style="color: #ef4444; font-weight: 700;">{max_v} {unit}</span>
+                    </div>
+                </div>
+                <strong style="color: #38bdf8; font-size: 0.86rem;">Ideal Commercial Reservoir Value:</strong><br>
+                <span style="color: #f8fafc; font-size: 0.90rem; font-weight: 600;">{meta['ideal_value']}</span><br><br>
+                <strong style="color: #10b981; font-size: 0.86rem;">Pay Cutoff Rule:</strong><br>
+                <span style="color: #cbd5e1; font-size: 0.86rem;">{meta['cutoff_value']}</span><br><br>
+                <strong style="color: #f59e0b; font-size: 0.86rem;">Shale / Non-Pay Baseline:</strong><br>
+                <span style="color: #cbd5e1; font-size: 0.86rem;">{meta['shale_baseline']}</span>
+            </div>
+            """), unsafe_allow_html=True)
+        with col2:
+            st.markdown(clean_html(f"""
+            <div style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 14px; margin-bottom: 10px;">
+                <strong style="color: #38bdf8; font-size: 0.86rem;">Physical Measurement Principle:</strong><br>
+                <span style="color: #cbd5e1; font-size: 0.84rem; line-height: 1.45;">{meta['physics']}</span><br><br>
+                <strong style="color: #38bdf8; font-size: 0.86rem;">Petrophysical Significance:</strong><br>
+                <span style="color: #cbd5e1; font-size: 0.84rem; line-height: 1.45;">{meta['significance']}</span>
+            </div>
+            """), unsafe_allow_html=True)
+
+        st.markdown(clean_html(f"""
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; margin-bottom: 8px;">
+            <div style="background: #0f172a; border-left: 4px solid #ef4444; padding: 10px 14px; border-radius: 0 6px 6px 0;">
+                <strong style="color: #ef4444; font-size: 0.84rem;">What High Readings Mean:</strong><br>
+                <span style="color: #cbd5e1; font-size: 0.82rem; line-height: 1.4;">{meta['high_meaning']}</span>
+            </div>
+            <div style="background: #0f172a; border-left: 4px solid #10b981; padding: 10px 14px; border-radius: 0 6px 6px 0;">
+                <strong style="color: #10b981; font-size: 0.84rem;">What Low Readings Mean:</strong><br>
+                <span style="color: #cbd5e1; font-size: 0.82rem; line-height: 1.4;">{meta['low_meaning']}</span>
+            </div>
+        </div>
+        <div style="background: #0f172a; border-left: 4px solid #f59e0b; padding: 10px 14px; border-radius: 0 6px 6px 0; margin-top: 6px;">
+            <strong style="color: #f59e0b; font-size: 0.84rem;">Operational Traps & Failure Modes (QC Alert):</strong><br>
+            <span style="color: #cbd5e1; font-size: 0.82rem; line-height: 1.4;">{meta['common_pitfalls']}</span>
+        </div>
+        <div style="color: #64748b; font-size: 0.78rem; margin-top: 8px;">
+            <strong>Literature Citation:</strong> {meta['reference']}
+        </div>
+        """), unsafe_allow_html=True)
+
+        with st.expander("Master Physical Bounds Table (All 24 Standard Logs)", expanded=False):
+            min_max_rows = []
+            for k in all_keys:
+                m = CURVE_KNOWLEDGE_BASE[k]
+                min_max_rows.append({
+                    "Log": k,
+                    "Name": m["name"],
+                    "Physical Min": f"{m.get('min_value')} {m.get('unit')}",
+                    "Physical Max": f"{m.get('max_value')} {m.get('unit')}",
+                    "Ideal Range": m.get("ideal_value"),
+                    "Cutoff": m.get("cutoff_value")
+                })
+            st.dataframe(pd.DataFrame(min_max_rows), use_container_width=True, hide_index=True)
+
+    _guidelines_modal()
+
+
 def render_sidebar_guidance(available_curves: Optional[List[str]] = None):
     """
     Renders an authoritative Petrophysical Reference Guidance panel in the Streamlit left sidebar.

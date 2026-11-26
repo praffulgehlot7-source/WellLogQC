@@ -15,6 +15,7 @@ __all__ = [
     "render_section_header",
     "render_sidebar_header",
     "render_advisory_card",
+    "get_petroleum_loader_html",
     "ICONS",
     "PALETTE",
     "CUSTOM_CSS",
@@ -65,20 +66,52 @@ html, body, [class*="css"] {
 /* Force wide layout across all views */
 .block-container {
     max-width: 96% !important;
-    padding-top: 1.5rem !important;
+    padding-top: 1.2rem !important;
     padding-bottom: 2rem !important;
     padding-left: 2rem !important;
     padding-right: 2rem !important;
     width: 100% !important;
 }
 
-/* Enterprise Header */
+/* ── 1. COMPLETELY REMOVE SIDEBAR ── */
+[data-testid="stSidebar"],
+section[data-testid="stSidebar"],
+[data-testid="collapsedControl"],
+.stSidebar {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    pointer-events: none !important;
+}
+
+/* ── 2. REMOVE RUNNING MAN / SPORTS ANIMATION & STOP BUTTON; KEEP 3-DOTS ── */
+[data-testid="stStatusWidget"],
+div[data-testid="stStatusWidget"],
+.stStatusWidget,
+button[kind="header-action"],
+button[data-testid="baseButton-headerAction"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+[data-testid="stMainMenu"],
+#MainMenu {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* ── 3. ENTERPRISE HEADER ── */
 .corporate-header {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     border: 1px solid #334155;
     border-radius: 8px;
-    padding: 18px 24px;
-    margin-bottom: 20px;
+    padding: 16px 22px;
+    margin-bottom: 16px;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -90,7 +123,7 @@ html, body, [class*="css"] {
 
 .corporate-header-text {
     flex: 1 1 auto;
-    min-width: 320px;
+    min-width: 300px;
 }
 
 .corporate-header-badge {
@@ -99,76 +132,36 @@ html, body, [class*="css"] {
 }
 
 .corporate-header h1 {
-    font-size: 1.65rem;
+    font-size: 1.55rem;
     font-weight: 700;
     color: #f8fafc;
-    margin: 0 0 6px 0;
+    margin: 0 0 4px 0;
     letter-spacing: -0.01em;
-    line-height: 1.35;
-    white-space: normal;
-    word-break: normal;
+    line-height: 1.3;
 }
 
 .corporate-header p {
     color: #94a3b8;
     margin: 0;
-    font-size: 0.90rem;
-    line-height: 1.45;
-    white-space: normal;
+    font-size: 0.88rem;
+    line-height: 1.4;
 }
 
-/* Buttons: Prevent any vertical word wrapping */
+/* ── 4. BUTTONS & UI CONTROLS ── */
 .stButton > button {
     white-space: nowrap !important;
     font-weight: 600 !important;
     letter-spacing: 0.02em !important;
-    padding: 10px 24px !important;
-    min-height: 44px !important;
+    padding: 8px 20px !important;
+    min-height: 42px !important;
 }
 
-/* Sidebar navigation links: Prevent vertical word wrapping */
-[data-testid="stSidebarNav"] span {
-    font-size: 0.95rem !important;
-    font-weight: 600 !important;
-    white-space: nowrap !important;
-}
-
-.status-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.74rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    padding: 6px 14px;
-    border-radius: 9999px;
-    white-space: nowrap;
-}
-
-.status-online {
-    background: rgba(16, 185, 129, 0.15);
-    color: #10b981;
-    border: 1px solid rgba(16, 185, 129, 0.4);
-}
-
-.status-offline {
-    background: rgba(239, 68, 68, 0.15);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.4);
-}
-
-.status-gpu {
-    background: rgba(56, 189, 248, 0.15);
-    color: #38bdf8;
-    border: 1px solid rgba(56, 189, 248, 0.4);
-}
-
+/* ── 5. KPI CARDS ── */
 .kpi-card {
     background: #1e293b;
     border: 1px solid #334155;
     border-radius: 8px;
-    padding: 16px 20px;
+    padding: 14px 18px;
     margin-bottom: 12px;
     min-width: 0;
     box-sizing: border-box;
@@ -176,12 +169,12 @@ html, body, [class*="css"] {
 }
 
 .kpi-label {
-    font-size: 0.78rem;
+    font-size: 0.76rem;
     font-weight: 700;
     color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -189,7 +182,7 @@ html, body, [class*="css"] {
 }
 
 .kpi-value {
-    font-size: 1.7rem;
+    font-size: 1.65rem;
     font-weight: 700;
     color: #f8fafc;
     line-height: 1.2;
@@ -197,66 +190,38 @@ html, body, [class*="css"] {
 }
 
 .kpi-sub {
-    font-size: 0.82rem;
+    font-size: 0.80rem;
     color: #64748b;
     margin-top: 4px;
-    white-space: normal;
-    word-break: normal;
-    line-height: 1.35;
+    line-height: 1.3;
 }
 
+/* ── 6. ADVISORY & RECOMMENDATION CARDS ── */
 .advisory-box {
     background: #0f172a;
     border-left: 4px solid #0284c7;
     border-radius: 0 8px 8px 0;
-    padding: 16px 20px;
-    margin: 14px 0;
+    padding: 14px 18px;
+    margin: 12px 0;
+    border-top: 1px solid #334155;
+    border-right: 1px solid #334155;
+    border-bottom: 1px solid #334155;
 }
 
 .advisory-title {
-    font-size: 0.92rem;
+    font-size: 0.90rem;
     font-weight: 600;
     color: #38bdf8;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
 .advisory-body {
-    font-size: 0.86rem;
+    font-size: 0.85rem;
     color: #cbd5e1;
     line-height: 1.5;
-}
-
-.decision-approved {
-    background: rgba(16, 185, 129, 0.12);
-    border: 1px solid #10b981;
-    color: #10b981;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-.decision-rejected {
-    background: rgba(239, 68, 68, 0.12);
-    border: 1px solid #ef4444;
-    color: #ef4444;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-.decision-relog {
-    background: rgba(245, 158, 11, 0.12);
-    border: 1px solid #f59e0b;
-    color: #f59e0b;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    font-weight: 600;
 }
 
 .advisory-drilling {
@@ -268,6 +233,127 @@ html, body, [class*="css"] {
 .advisory-petro {
     border-left: 4px solid #0284c7 !important;
 }
+
+/* ── 7. LIGHT & DARK THEME ADAPTABILITY (ALL LINES VISIBLE IN BOTH THEMES) ── */
+@media (prefers-color-scheme: light) {
+    .corporate-header {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+    .corporate-header h1 {
+        color: #0f172a !important;
+    }
+    .corporate-header p {
+        color: #475569 !important;
+    }
+    .kpi-card {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .kpi-label {
+        color: #475569 !important;
+    }
+    .kpi-value {
+        color: #0f172a !important;
+    }
+    .kpi-sub {
+        color: #64748b !important;
+    }
+    .advisory-box {
+        background: #ffffff !important;
+        border-top: 1px solid #cbd5e1 !important;
+        border-right: 1px solid #cbd5e1 !important;
+        border-bottom: 1px solid #cbd5e1 !important;
+    }
+    .advisory-title {
+        color: #0369a1 !important;
+    }
+    .advisory-body {
+        color: #334155 !important;
+    }
+}
+
+[data-theme="light"] .corporate-header {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+    border: 1px solid #cbd5e1 !important;
+}
+[data-theme="light"] .corporate-header h1 {
+    color: #0f172a !important;
+}
+[data-theme="light"] .corporate-header p {
+    color: #475569 !important;
+}
+[data-theme="light"] .kpi-card {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+[data-theme="light"] .kpi-label {
+    color: #475569 !important;
+}
+[data-theme="light"] .kpi-value {
+    color: #0f172a !important;
+}
+[data-theme="light"] .kpi-sub {
+    color: #64748b !important;
+}
+[data-theme="light"] .advisory-box {
+    background: #ffffff !important;
+    border-top: 1px solid #cbd5e1 !important;
+    border-right: 1px solid #cbd5e1 !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+}
+[data-theme="light"] .advisory-title {
+    color: #0369a1 !important;
+}
+[data-theme="light"] .advisory-body {
+    color: #334155 !important;
+}
+
+/* ── 8. FORMATION EVALUATION PETROLEUM LOADER ANIMATION ── */
+@keyframes wireline-scan {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(40px); }
+    100% { transform: translateY(0px); }
+}
+
+@keyframes sensor-beam {
+    0% { transform: scaleX(0.7); opacity: 0.9; }
+    50% { transform: scaleX(1.3); opacity: 0.4; }
+    100% { transform: scaleX(0.7); opacity: 0.9; }
+}
+
+@keyframes eval-pulse {
+    0%, 100% { opacity: 0.85; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.02); }
+}
+
+.petro-loader-card {
+    background: #1e293b;
+    border: 1px solid #38bdf8;
+    border-radius: 8px;
+    padding: 24px;
+    margin: 18px 0;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(56, 189, 248, 0.12);
+}
+
+.petro-loader-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #38bdf8;
+    letter-spacing: 0.10em;
+    margin-top: 12px;
+    margin-bottom: 4px;
+    animation: eval-pulse 1.8s infinite ease-in-out;
+}
+
+.petro-loader-sub {
+    font-size: 0.88rem;
+    color: #94a3b8;
+    margin-bottom: 8px;
+}
 </style>
 """
 
@@ -275,9 +361,73 @@ def clean_html(html: str) -> str:
     """Strip leading indentation and empty lines so CommonMark never parses HTML as a code block."""
     return "\n".join(line.lstrip() for line in html.splitlines() if line.strip())
 
-def inject_custom_theme():
-    """Inject corporate CSS stylesheet into Streamlit app."""
-    st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+def inject_custom_theme(analysis_done: bool = False):
+    """Inject corporate CSS stylesheet into Streamlit app with conditional print menu control."""
+    css = CUSTOM_CSS
+    if not analysis_done:
+        css += """
+        <style>
+        /* Hide Print option from 3-dot menu before formation analysis is completed */
+        div[data-testid="stMainMenuPopover"] li:nth-child(3),
+        div[role="menu"] [role="menuitem"]:has(span:contains("Print")),
+        button[role="menuitem"]:has(div:contains("Print")) {
+            display: none !important;
+        }
+        </style>
+        """
+    st.markdown(css, unsafe_allow_html=True)
+
+def get_petroleum_loader_html() -> str:
+    """Generate high-contrast petroleum formation evaluation loading animation."""
+    return clean_html("""
+    <div class="petro-loader-card">
+        <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="280" height="150" viewBox="0 0 280 150" style="overflow: visible;">
+                <!-- Geological Strata Background -->
+                <rect x="20" y="20" width="100" height="28" fill="#334155" rx="2" opacity="0.8"/>
+                <rect x="160" y="20" width="100" height="28" fill="#334155" rx="2" opacity="0.8"/>
+                <text x="25" y="38" fill="#94a3b8" font-size="9" font-family="sans-serif">Shale Caprock</text>
+
+                <rect x="20" y="52" width="100" height="28" fill="#475569" rx="2" opacity="0.8"/>
+                <rect x="160" y="52" width="100" height="28" fill="#475569" rx="2" opacity="0.8"/>
+                <text x="25" y="70" fill="#cbd5e1" font-size="9" font-family="sans-serif">Limestone Matrix</text>
+
+                <rect x="20" y="84" width="100" height="28" fill="#b45309" rx="2" opacity="0.85"/>
+                <rect x="160" y="84" width="100" height="28" fill="#b45309" rx="2" opacity="0.85"/>
+                <text x="25" y="102" fill="#fde68a" font-size="9" font-family="sans-serif">Porous Sandstone</text>
+
+                <rect x="20" y="116" width="100" height="28" fill="#047857" rx="2" opacity="0.9"/>
+                <rect x="160" y="116" width="100" height="28" fill="#047857" rx="2" opacity="0.9"/>
+                <text x="25" y="134" fill="#a7f3d0" font-weight="700" font-size="9" font-family="sans-serif">Hydrocarbon Pay Zone</text>
+
+                <!-- Borehole Wellbore Walls -->
+                <line x1="124" y1="10" x2="124" y2="150" stroke="#38bdf8" stroke-width="2" stroke-dasharray="3,3"/>
+                <line x1="156" y1="10" x2="156" y2="150" stroke="#38bdf8" stroke-width="2" stroke-dasharray="3,3"/>
+
+                <!-- Wireline Cable -->
+                <line x1="140" y1="0" x2="140" y2="140" stroke="#94a3b8" stroke-width="1.5"/>
+
+                <!-- Animated Wireline Tool Sonde -->
+                <g style="animation: wireline-scan 2.4s infinite ease-in-out;">
+                    <!-- Sonde Body -->
+                    <rect x="133" y="35" width="14" height="42" rx="4" fill="#0284c7" stroke="#38bdf8" stroke-width="1.5"/>
+                    <circle cx="140" cy="45" r="2.5" fill="#38bdf8"/>
+                    <circle cx="140" cy="56" r="2.5" fill="#10b981"/>
+                    <circle cx="140" cy="67" r="2.5" fill="#f59e0b"/>
+
+                    <!-- Acoustic / Resistivity Sensor Beams radiating into formation -->
+                    <ellipse cx="140" cy="56" rx="36" ry="12" fill="none" stroke="#38bdf8" stroke-width="1.5" opacity="0.7" style="animation: sensor-beam 1.4s infinite ease-in-out; transform-origin: 140px 56px;"/>
+                    <ellipse cx="140" cy="56" rx="58" ry="18" fill="none" stroke="#10b981" stroke-width="1" opacity="0.5" style="animation: sensor-beam 1.4s infinite ease-in-out; animation-delay: 0.4s; transform-origin: 140px 56px;"/>
+                </g>
+            </svg>
+        </div>
+        <div class="petro-loader-title">EVALUATING</div>
+        <div class="petro-loader-sub">Multi-Sensor Formation Evaluation & Wireline QC Screening</div>
+        <div style="font-size: 0.78rem; color: #64748b; font-weight: 500;">
+            Screening Borehole Washout &bull; Compensating Density Standoff &bull; Archie Saturation Synthesis
+        </div>
+    </div>
+    """)
 
 def render_page_header(title: str, subtitle: str, badge_text: str = None, badge_type: str = "gpu"):
     """Render a clean, corporate header with an optional status pill."""

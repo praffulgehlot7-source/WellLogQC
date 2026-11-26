@@ -27,11 +27,10 @@ st.set_page_config(
 from welllogqc.app.ui_theme import inject_custom_theme
 inject_custom_theme()
 
-# Two-Interface Navigation Router
+# Single-Interface Platform Navigation (Training reserved for developers)
 pages = [
-    st.Page(str(APP_DIR / "pages" / "1_Model_Training.py"), title="Training", default=False),
-    st.Page(str(APP_DIR / "pages" / "2_Well_Analysis.py"), title="Analysis", default=True),
+    st.Page(str(APP_DIR / "pages" / "2_Well_Analysis.py"), title="Formation Analysis", default=True),
 ]
 
-pg = st.navigation(pages)
+pg = st.navigation(pages, position="hidden")
 pg.run()

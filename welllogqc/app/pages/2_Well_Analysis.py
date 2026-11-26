@@ -40,6 +40,7 @@ from welllogqc.app.ui_theme import (
     render_section_header,
     render_sidebar_header,
     render_advisory_card,
+    get_petroleum_loader_html,
     ICONS,
 )
 from welllogqc.ingestion.las_reader import LASReader
@@ -61,7 +62,7 @@ from welllogqc.advisory.curve_guide import (
     get_curve_guide_for_well,
     get_guide_comparison_dataframe,
     get_all_curve_guides,
-    render_sidebar_guidance,
+    show_guidelines_dialog,
 )
 from welllogqc.petrophysics.environmental_correction import (
     apply_automated_environmental_corrections,
@@ -75,7 +76,7 @@ from welllogqc.service.gpu_detector import detect_gpu
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-inject_custom_theme()
+inject_custom_theme(analysis_done=st.session_state.get("analysis_done", False))
 
 MODELS_DIR = PROJECT_ROOT / "models"
 DATA_RAW = PROJECT_ROOT / "data" / "raw"
@@ -83,32 +84,56 @@ DATA_RAW = PROJECT_ROOT / "data" / "raw"
 # Session State Persistence
 for key in [
     "analysis_well_res", "analysis_qc_flags", "analysis_petro", "analysis_ntg",
-    "analysis_prox", "analysis_decisions", "analysis_done", "analysis_env_corr", "analysis_cross_corr"
+    "analysis_prox", "analysis_decisions", "analysis_done", "analysis_env_corr", "analysis_cross_corr",
+    "show_benchmark_comparison"
 ]:
     if key not in st.session_state:
-        st.session_state[key] = None if key != "analysis_done" else False
+        st.session_state[key] = False if key in ["analysis_done", "show_benchmark_comparison"] else None
 
 gpu_info = detect_gpu()
+
+# ── TOP BAR: GUIDELINES BUTTON (TOP LEFT) ────────────────────────────────────
+top_col_guide, top_col_spacer = st.columns([2, 10])
+with top_col_guide:
+    if st.button("Guidelines", icon=":material/menu_book:", type="secondary", use_container_width=True, key="top_guidelines_btn"):
+        show_guidelines_dialog(st.session_state.analysis_well_res.available_curves if st.session_state.analysis_well_res is not None else None)
 
 render_page_header(
     title="Well Log Prediction & Formation Analysis",
     subtitle="Single-file wireline log evaluation: automated QC, rigorous petrophysics, and synchronized depth-linked review highlighting",
 )
 
-# ── SECTION 1: SINGLE FILE INPUT ──────────────────────────────────────────────
-render_section_header("Step 1: Upload or Select Wireline Log File", "database", "Upload a single vendor wireline file (.las, .csv) or pick a preloaded well from disk")
+# ── SECTION 1: ABOUT (LEFT) & FILE INPUT (RIGHT) ──────────────────────────────
+render_section_header("Upload or Select Wireline Log File", "database", "Upload a vendor wireline file (.las, .csv) or pick a preloaded well from disk")
 
-col_upload, col_preset = st.columns([2, 1])
+col_desc, col_input = st.columns([1, 1], gap="medium")
 
-with col_upload:
+with col_desc:
+    st.markdown(clean_html(r"""
+    <div style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 20px 24px; height: 100%; box-sizing: border-box;">
+        <div style="color: #38bdf8; font-weight: 700; font-size: 1.1rem; margin-bottom: 8px;">
+            Autonomous Well Log Evaluation Engine
+        </div>
+        <div style="color: #cbd5e1; font-size: 0.90rem; line-height: 1.6; margin-bottom: 12px;">
+            An enterprise petrophysical evaluation platform built for rapid subsurface well log screening and commercial reservoir characterization.
+        </div>
+        <div style="color: #94a3b8; font-size: 0.85rem; line-height: 1.6;">
+            &bull; <strong>Automated QC:</strong> Range sanity, sticking sensor, and depth checks<br>
+            &bull; <strong>Borehole Corrections:</strong> Dynamic mudcake and pad standoff restoration<br>
+            &bull; <strong>Petrophysics:</strong> Clay volume (Vsh), density porosity (&phi;D), Archie saturation (Sw)<br>
+            &bull; <strong>Synthesis:</strong> Multi-curve cross-correlation and commercial Net Pay (NTG)<br>
+            &bull; <strong>Standards:</strong> SPWLA and Schlumberger reference baselines
+        </div>
+    </div>
+    """), unsafe_allow_html=True)
+
+with col_input:
     uploaded_file = st.file_uploader(
-        "Upload Single Well Log File (.las, .csv)",
+        "Upload Well Log File (.las, .csv)",
         type=["las", "LAS", "csv", "CSV"],
         key="analysis_file_uploader",
         help="Upload vendor wireline LAS file or depth-indexed CSV file"
     )
-
-with col_preset:
     archive_paths = list(DATA_RAW.rglob("*.las"))
     archive_names = [p.stem for p in archive_paths]
     selected_preset = st.selectbox(
@@ -134,9 +159,6 @@ elif selected_preset != "(Select file above)":
 elif st.session_state.analysis_well_res is not None:
     active_res = st.session_state.analysis_well_res
 
-# ── SIDEBAR GUIDANCE BAR ──────────────────────────────────────────────────────
-render_sidebar_guidance(active_res.available_curves if active_res is not None else None)
-
 if active_res is None:
     st.info("Please upload a wireline log file or select a preloaded well to proceed with analysis.")
     st.stop()
@@ -159,76 +181,75 @@ st.markdown(clean_html(f"""
 """), unsafe_allow_html=True)
 
 # ── SECTION 2: PRIMARY ACTION BUTTON ──────────────────────────────────────────
-run_analysis_btn = st.button("Run AI Prediction & Formation Analysis", type="primary", use_container_width=True)
+run_analysis_btn = st.button("Formation Analysis", type="primary", use_container_width=True, key="btn_run_formation_analysis")
 
 if run_analysis_btn:
-    with st.spinner("Executing multi-sensor QC, petrophysics, and formation gap analysis..."):
-        t_start = time.perf_counter()
+    loader_ph = st.empty()
+    loader_ph.markdown(get_petroleum_loader_html(), unsafe_allow_html=True)
+    time.sleep(1.0)
 
-        # 1. Quality Control screening
-        flags = run_all_qc(active_res)
-        st.session_state.analysis_qc_flags = flags
+    # 1. Quality Control screening
+    flags = run_all_qc(active_res)
+    st.session_state.analysis_qc_flags = flags
 
-        # 2. Automated Borehole Environmental Corrections
-        # When caliper flags washout, automatically apply mudcake and borehole-fluid corrections
-        # to Bulk Density (RHOB) and Resistivity (RT) rather than just issuing a warning flag!
-        bs_nominal = float(df["BS"].iloc[0]) if "BS" in df.columns else 8.5
-        env_pkg = apply_automated_environmental_corrections(df, bs_default=bs_nominal)
-        st.session_state.analysis_env_corr = env_pkg
-        corr_df = env_pkg["corrected_df"]
+    # 2. Automated Borehole Environmental Corrections
+    # When caliper flags washout, automatically apply mudcake and borehole-fluid corrections
+    # to Bulk Density (RHOB) and Resistivity (RT) rather than just issuing a warning flag!
+    bs_nominal = float(df["BS"].iloc[0]) if "BS" in df.columns else 8.5
+    env_pkg = apply_automated_environmental_corrections(df, bs_default=bs_nominal)
+    st.session_state.analysis_env_corr = env_pkg
+    corr_df = env_pkg["corrected_df"]
 
-        # 3. Petrophysics calculation on environmentally corrected curves
-        petro = env_pkg["petro_corr"].copy()
-        st.session_state.analysis_petro = petro
+    # 3. Petrophysics calculation on environmentally corrected curves
+    petro = env_pkg["petro_corr"].copy()
+    st.session_state.analysis_petro = petro
 
-        # 4. Multi-Curve Petrophysical Cross-Correlation Engine
-        cross_corr_res = run_multicurve_cross_correlation(
-            corr_df,
-            vsh=petro.get("VSH"),
-            phid=petro.get("PHID"),
-            sw=petro.get("SW"),
-            bs_default=bs_nominal
+    # 4. Multi-Curve Petrophysical Cross-Correlation Engine
+    cross_corr_res = run_multicurve_cross_correlation(
+        corr_df,
+        vsh=petro.get("VSH"),
+        phid=petro.get("PHID"),
+        sw=petro.get("SW"),
+        bs_default=bs_nominal
+    )
+    st.session_state.analysis_cross_corr = cross_corr_res
+
+    # 5. Net-to-Gross & Net Pay (calculated on environmentally corrected curves)
+    if "VSH" in petro and "PHID" in petro:
+        df_ntg = corr_df.copy()
+        df_ntg["VSH_LINEAR"] = petro["VSH"]
+        df_ntg["PHID"] = petro["PHID"]
+        qc_depths = list(zip(flags.depth_top, flags.depth_base)) if flags is not None else None
+        ntg = calc_ntg(
+            df_ntg,
+            gross_top=float(df.index.min()),
+            gross_base=float(df.index.max()),
+            vsh_cutoff=0.35,
+            phid_cutoff=0.10,
+            qc_flag_depths=qc_depths
         )
-        st.session_state.analysis_cross_corr = cross_corr_res
+        st.session_state.analysis_ntg = ntg
 
-        # 5. Net-to-Gross & Net Pay (calculated on environmentally corrected curves)
-        if "VSH" in petro and "PHID" in petro:
-            df_ntg = corr_df.copy()
-            df_ntg["VSH_LINEAR"] = petro["VSH"]
-            df_ntg["PHID"] = petro["PHID"]
-            qc_depths = list(zip(flags.depth_top, flags.depth_base)) if flags is not None else None
-            ntg = calc_ntg(
-                df_ntg,
-                gross_top=float(df.index.min()),
-                gross_base=float(df.index.max()),
-                vsh_cutoff=0.35,
-                phid_cutoff=0.10,
-                qc_flag_depths=qc_depths
-            )
-            st.session_state.analysis_ntg = ntg
+    # 6. Ideal Reservoir Benchmark Proximity (on corrected curves)
+    prox = compute_ideal_reservoir_gap_analysis(
+        corr_df,
+        vsh=petro.get("VSH"),
+        phid=petro.get("PHID"),
+        sw=petro.get("SW")
+    )
+    st.session_state.analysis_prox = prox
 
-        # 6. Ideal Reservoir Benchmark Proximity (on corrected curves)
-        prox = compute_ideal_reservoir_gap_analysis(
-            corr_df,
-            vsh=petro.get("VSH"),
-            phid=petro.get("PHID"),
-            sw=petro.get("SW")
-        )
-        st.session_state.analysis_prox = prox
-
-        # 7. Interval Decisions & Review Required Identification
-        decisions = generate_interval_decisions(
-            corr_df,
-            qc_flags=flags,
-            predictions=None,
-            vsh=petro.get("VSH"),
-            phid=petro.get("PHID")
-        )
-        st.session_state.analysis_decisions = decisions
-        st.session_state.analysis_done = True
-
-        t_elapsed = (time.perf_counter() - t_start) * 1000.0
-        st.success(f"Analysis completed in {t_elapsed:.1f} ms! All results, interactive depth-linked graphs, and review points are generated below.")
+    # 7. Interval Decisions & Review Required Identification
+    decisions = generate_interval_decisions(
+        corr_df,
+        qc_flags=flags,
+        predictions=None,
+        vsh=petro.get("VSH"),
+        phid=petro.get("PHID")
+    )
+    st.session_state.analysis_decisions = decisions
+    st.session_state.analysis_done = True
+    loader_ph.empty()
 
 # ── SECTION 3: COMPREHENSIVE OUTCOMES & USER-FRIENDLY RESULTS ─────────────────
 flags = st.session_state.analysis_qc_flags
@@ -238,8 +259,8 @@ prox = st.session_state.analysis_prox
 decisions = st.session_state.analysis_decisions
 
 if st.session_state.analysis_done and prox is not None:
-    # ── 1. EXECUTIVE RESULTS SUMMARY GRID ─────────────────────────────────────
-    render_section_header("1. Executive Results & Key Performance Indicators", "chart", "Overview of formation potential, pay thickness, and reservoir quality in simple numbers")
+    # ── 1. PERFORMANCE INDICATORS ─────────────────────────────────────────────
+    render_section_header("Performance Indicators", "chart", "Overview of formation potential, pay thickness, and reservoir quality in simple numbers")
 
     row1_1, row1_2, row1_3 = st.columns(3)
     with row1_1:
@@ -265,12 +286,12 @@ if st.session_state.analysis_done and prox is not None:
     env_pkg = st.session_state.analysis_env_corr
     cross_corr = st.session_state.analysis_cross_corr
 
-    # Plain-English Executive Verdict Card
+    # Formation Verdict Card
     tier = prox.get("reservoir_tier", "Commercial Reservoir")
     st.markdown(clean_html(f"""
     <div style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 18px 24px; margin-top: 14px; margin-bottom: 22px;">
         <div style="color: #38bdf8; font-weight: 700; font-size: 1.05rem; margin-bottom: 8px;">
-            Plain-English Formation Verdict: {tier}
+            Verdict: {tier}
         </div>
         <div style="color: #cbd5e1; font-size: 0.92rem; line-height: 1.6;">
             <strong>What this means for your well:</strong><br>
@@ -305,19 +326,11 @@ if st.session_state.analysis_done and prox is not None:
         </div>
         """), unsafe_allow_html=True)
 
-    # ── 2. DEPTHS WHERE PETROPHYSICIST REVIEW IS REQUIRED ─────────────────────
-    render_section_header(
-        "2. Action Required: Specific Depths Needing Petrophysicist Review",
-        "alert",
-        "High-priority intervals pinpointed by the AI engine where borehole washouts, sensor sticking, or extreme anomalies require human verification"
-    )
-
+    # Identify washouts & anomalies for review
     review_needed_rows = []
-    # Identify washouts
     if "CALI" in df.columns and "BS" in df.columns:
         washout_mask = (df["CALI"] - df["BS"]) > 1.5
         if washout_mask.any():
-            # Find contiguous washout intervals
             diffs = np.diff(washout_mask.astype(int))
             starts = np.where(diffs == 1)[0] + 1
             if washout_mask.iloc[0]:
@@ -342,10 +355,8 @@ if st.session_state.analysis_done and prox is not None:
                     "base": base_d
                 })
 
-    # Add flags from rule-based QC
     if flags is not None:
         for _, flg in flags[flags["severity"].isin(["CRITICAL", "WARNING"])].iterrows():
-            # Check if not already covered
             t = float(flg["depth_top"])
             b = float(flg["depth_base"])
             thick = abs(b - t)
@@ -361,37 +372,9 @@ if st.session_state.analysis_done and prox is not None:
                     "base": b
                 })
 
-    if review_needed_rows:
-        rev_df = pd.DataFrame(review_needed_rows)
-        # Highlight in callout cards
-        for idx, r in rev_df.head(4).iterrows():
-            sev_border = "#ef4444" if r["Severity"] == "CRITICAL" or r["Severity"] == "HIGH" else "#f59e0b"
-            st.markdown(clean_html(f"""
-            <div style="background: #1e293b; border-left: 5px solid {sev_border}; border-top: 1px solid #334155; border-right: 1px solid #334155; border-bottom: 1px solid #334155; border-radius: 6px; padding: 12px 18px; margin-bottom: 12px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                    <strong style="color: #f8fafc; font-size: 0.95rem;">Depth Interval: {r['Depth Interval (ft)']} ({r['Thickness']})</strong>
-                    <span style="font-size: 0.78rem; font-weight: 700; color: {sev_border}; background: rgba(239, 68, 68, 0.1); padding: 2px 8px; border-radius: 4px;">
-                        {r['Severity']} SEVERITY &bull; {r['Primary Anomaly']}
-                    </span>
-                </div>
-                <div style="font-size: 0.86rem; color: #cbd5e1; margin-bottom: 4px;">
-                    <strong>Why Review is Needed:</strong> {r['Why Review is Required (Plain English)']}
-                </div>
-                <div style="font-size: 0.84rem; color: #38bdf8;">
-                    <strong>Recommended Action:</strong> {r['Recommended Action']}
-                </div>
-            </div>
-            """), unsafe_allow_html=True)
-
-        if len(rev_df) > 4:
-            with st.expander(f"View All {len(rev_df)} Flagged Review Intervals in Detail", expanded=False):
-                st.dataframe(rev_df[["Depth Interval (ft)", "Thickness", "Primary Anomaly", "Severity", "Why Review is Required (Plain English)", "Recommended Action"]], use_container_width=True, hide_index=True)
-    else:
-        st.success("Clean Formation: No high-severity anomalies detected. Log readings are physically consistent across all depth intervals.")
-
-    # ── 3. SYNCHRONIZED INTERACTIVE PLOTLY GRAPHS WITH HOVER HIGHLIGHTING ─────
+    # ── 2. SYNCHRONISED MULTITASK WELL LOG ────────────────────────────────────
     render_section_header(
-        "3. Synchronized Multi-Track Well Log (Hover to Inspect & Pinpoint Depths)",
+        "Synchronised Multitask Well Log",
         "activity",
         "Move your cursor anywhere across the graph: the exact same depth highlights synchronously across all 4 tracks with review callouts"
     )
@@ -732,29 +715,14 @@ if st.session_state.analysis_done and prox is not None:
                     use_container_width=True
                 )
 
-    # ── 5. IDEAL RESERVOIR BENCHMARK GAP ANALYSIS ─────────────────────────────
+    # ── 4. IDEAL RESERVOIR BENCHMARK GAP ANALYSIS ─────────────────────────────
     render_section_header(
-        "5. Ideal Reservoir Benchmark Comparison (Gap Analysis)",
+        "Ideal Reservoir Benchmark Comparison (Gap Analysis)",
         "target",
-        "Side-by-side gap analysis comparing active well parameters against world-class clastic reservoir baselines (Wilcox/Brent benchmark) with conclusive engineering takeaways"
+        f"Side-by-side gap analysis comparing active well parameters against world-class clastic reservoir baselines ({prox['composite_reservoir_proximity_pct']}% composite match, {prox['reservoir_tier']})"
     )
 
-    comp_df = get_ideal_benchmark_comparison_table(prox)
-    st.dataframe(comp_df, use_container_width=True, hide_index=True)
-
-    st.markdown(clean_html(f"""
-    <div style="background: #1e293b; border-left: 4px solid #38bdf8; border-radius: 0 8px 8px 0; padding: 14px 20px; margin-top: 14px; margin-bottom: 18px;">
-        <div style="color: #38bdf8; font-weight: 700; font-size: 0.96rem; margin-bottom: 6px;">
-            Key Takeaways & Comparison Summary vs. Ideal Standard
-        </div>
-        <div style="color: #cbd5e1; font-size: 0.88rem; line-height: 1.55;">
-            The comparison table above contrasts your given well data with world-class clastic reservoir standards ({prox['composite_reservoir_proximity_pct']}% composite match, <strong>{prox['reservoir_tier']}</strong>).
-            Review the <strong>Key Comparison Notes & Concluding Remarks</strong> column to inspect specific operational impacts (borehole breakout, clay choke, porosity storage, or water cut risks) for every measured and calculated parameter.
-        </div>
-    </div>
-    """), unsafe_allow_html=True)
-
-    # Proximity Meter Progress Bars
+    # Proximity Meter Progress Bars & Match Percentage (Requirement 10)
     st.markdown("##### Formation Quality Scores Relative to Ideal Reservoir")
     b1, b2, b3, b4 = st.columns(4)
     with b1:
@@ -770,8 +738,29 @@ if st.session_state.analysis_done and prox is not None:
         st.metric("Hydrocarbon Saturation", f"{prox['hydrocarbon_saturation_index']}%")
         st.progress(float(prox['hydrocarbon_saturation_index']) / 100.0)
 
-    # ── 6. ACTIONABLE ENGINEERING ADVICE & DELIVERABLES ───────────────────────
-    render_section_header("6. Actionable Engineering Improvements & Deliverables", "shield", "Domain guidance synthesized for drilling, wireline acquisition, and completion engineers")
+    # Separate button to reveal the benchmark comparison table (Requirement 10)
+    comp_df = get_ideal_benchmark_comparison_table(prox)
+    btn_label = "Hide Benchmark Comparison Table" if st.session_state.get("show_benchmark_comparison", False) else "View Benchmark Comparison Table"
+    if st.button(btn_label, key="btn_benchmark_table_toggle", type="secondary"):
+        st.session_state.show_benchmark_comparison = not st.session_state.get("show_benchmark_comparison", False)
+        st.rerun()
+
+    if st.session_state.get("show_benchmark_comparison", False):
+        st.dataframe(comp_df, use_container_width=True, hide_index=True)
+        st.markdown(clean_html(f"""
+        <div style="background: rgba(56, 189, 248, 0.08); border-left: 4px solid #38bdf8; border-radius: 0 8px 8px 0; padding: 14px 20px; margin-top: 14px; margin-bottom: 18px;">
+            <div style="color: #38bdf8; font-weight: 700; font-size: 0.96rem; margin-bottom: 6px;">
+                Key Takeaways & Comparison Summary vs. Ideal Standard
+            </div>
+            <div style="color: #cbd5e1; font-size: 0.88rem; line-height: 1.55;">
+                The comparison table above contrasts your given well data with world-class clastic reservoir standards ({prox['composite_reservoir_proximity_pct']}% composite match, <strong>{prox['reservoir_tier']}</strong>).
+                Review the <strong>Key Comparison Notes & Concluding Remarks</strong> column to inspect specific operational impacts (borehole breakout, clay choke, porosity storage, or water cut risks) for every measured and calculated parameter.
+            </div>
+        </div>
+        """), unsafe_allow_html=True)
+
+    # ── 5. ACTIONABLE ENGINEERING ADVICE & DELIVERABLES ───────────────────────
+    render_section_header("Actionable Engineering Improvements & Deliverables", "shield", "Domain guidance synthesized for drilling, wireline acquisition, and completion engineers")
 
     advisories = generate_actionable_advisories(
         df,
@@ -788,101 +777,39 @@ if st.session_state.analysis_done and prox is not None:
             category=cat
         )
 
-    # ── 7. GUIDANCE: LOG STANDARDS & PETROPHYSICAL MEANING ────────────────────
+    # ── 6. ACTION REQUIRED: SPECIFIC DEPTHS NEEDING PETROPHYSICIST REVIEW (SECOND-TO-LAST) ─────────
     render_section_header(
-        "7. Guidance: Ideal Wireline Log Standards & Petrophysical Meaning",
-        "compass",
-        f"Authoritative benchmark reference and physical meaning for all {len(active_res.available_curves)} curves in target well '{active_res.well_name}' (Compiled from Schlumberger, AAPG, and SPWLA standards)"
+        "Action Required: Specific Depths Needing Petrophysicist Review",
+        "alert",
+        f"Critical intervals flagged for sensor distortion, borehole breakout, or tool failure requiring immediate petrophysical intervention ({len(review_needed_rows)} intervals identified)"
     )
 
-    st.markdown(clean_html("""
-    <div style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 18px 22px; margin-bottom: 20px;">
-        <div style="color: #38bdf8; font-weight: 700; font-size: 1.05rem; margin-bottom: 8px;">
-            How to Interpret Wireline Logs in This Well: Standard Benchmarks & Physical Meaning
-        </div>
-        <div style="color: #cbd5e1; font-size: 0.90rem; line-height: 1.6;">
-            Every downhole sensor operates on fundamental physics (nuclear scintillation, electron scattering, hydrogen moderation, electrical induction, and acoustic wave transit). 
-            Below is the authentic petroleum engineering reference guide explaining what each log in your uploaded dataset measures, its physical minimum and maximum limits, ideal commercial reservoir baseline, standard clean sand vs. shale cutoffs, and common operational traps.
-            <br><br>
-            <span style="color: #94a3b8; font-size: 0.84rem;">
-                <strong>Key References:</strong> Schlumberger Log Interpretation Principles & Applications (1989/2009) &bull; Asquith & Krygowski, <em>Basic Well Log Analysis</em> (AAPG Methods in Exploration 16) &bull; SPWLA Standards &bull; Glover Petrophysics (University of Aberdeen).
-            </span>
-        </div>
-    </div>
-    """), unsafe_allow_html=True)
-
-    # 1. Active Well Standards Comparison Table
-    st.markdown("##### 1. Master Reference Table: Ideal Values vs. Cutoffs for Active Well Curves")
-    guide_table_df = get_guide_comparison_dataframe(active_res.available_curves)
-    st.dataframe(guide_table_df, use_container_width=True, hide_index=True)
-
-    # 2. Detailed Educational Guide for Each Available Curve (Accordions)
-    st.markdown(f"##### 2. Guidance: Detailed Formation Log Analysis in '{active_res.well_name}'")
-    well_guides = get_curve_guide_for_well(active_res.available_curves)
-    
-    # Also include derived petrophysical guides if computed
-    derived_to_add = []
-    if "VSH" in petro:
-        derived_to_add.append("VSH")
-    if "PHID" in petro:
-        derived_to_add.append("PHID")
-    if "SW" in petro:
-        derived_to_add.append("SW")
-    if derived_to_add:
-        well_guides.extend(get_curve_guide_for_well(derived_to_add))
-
-    for g in well_guides:
-        with st.expander(f"{g['curve_symbol']} - {g['name']} ({g['unit']}) &bull; Category: {g['category']}", expanded=False):
-            gc1, gc2 = st.columns([1, 1])
-            with gc1:
+    if review_needed_rows:
+        rev_df = pd.DataFrame(review_needed_rows)
+        crit_rows = [r for r in review_needed_rows if r["Severity"] in ["HIGH", "CRITICAL"]]
+        if crit_rows:
+            st.markdown(f"**Identified {len(crit_rows)} high-priority intervals requiring operational intervention:**")
+            for cr in crit_rows[:5]:
                 st.markdown(clean_html(f"""
-                <div style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 14px; margin-bottom: 10px;">
-                    <strong style="color: #38bdf8;">Ideal Commercial Reservoir Value:</strong><br>
-                    <span style="color: #f8fafc; font-size: 0.95rem; font-weight: 600;">{g['ideal_value']}</span><br><br>
-                    <strong style="color: #10b981;">Pay Cutoff Rule:</strong><br>
-                    <span style="color: #cbd5e1; font-size: 0.90rem;">{g['cutoff_value']}</span><br><br>
-                    <strong style="color: #f59e0b;">Shale / Non-Pay Baseline:</strong><br>
-                    <span style="color: #cbd5e1; font-size: 0.90rem;">{g['shale_baseline']}</span>
-                </div>
-                """), unsafe_allow_html=True)
-            with gc2:
-                st.markdown(clean_html(f"""
-                <div style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 14px; margin-bottom: 10px;">
-                    <strong style="color: #38bdf8;">Physical Measurement Principle:</strong><br>
-                    <span style="color: #cbd5e1; font-size: 0.88rem; line-height: 1.4;">{g['physics']}</span><br><br>
-                    <strong style="color: #38bdf8;">Petrophysical Significance:</strong><br>
-                    <span style="color: #cbd5e1; font-size: 0.88rem; line-height: 1.4;">{g['significance']}</span>
+                <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; border-radius: 0 6px 6px 0; padding: 12px 18px; margin-bottom: 10px;">
+                    <div style="color: #ef4444; font-weight: 700; font-size: 0.92rem; margin-bottom: 4px;">
+                        Depth {cr['Depth Interval (ft)']} ({cr['Thickness']}) &bull; {cr['Primary Anomaly']} [{cr['Severity']}]
+                    </div>
+                    <div style="color: #cbd5e1; font-size: 0.86rem; line-height: 1.5;">
+                        <strong>Root Cause:</strong> {cr['Why Review is Required (Plain English)']}<br>
+                        <strong>Remedial Action:</strong> {cr['Recommended Action']}
+                    </div>
                 </div>
                 """), unsafe_allow_html=True)
 
-            st.markdown(clean_html(f"""
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; margin-bottom: 10px;">
-                <div style="background: #0f172a; border-left: 4px solid #ef4444; padding: 12px 16px; border-radius: 0 6px 6px 0;">
-                    <strong style="color: #ef4444; font-size: 0.88rem;">What High Readings Mean (Plain English):</strong><br>
-                    <span style="color: #cbd5e1; font-size: 0.86rem; line-height: 1.45;">{g['high_meaning']}</span>
-                </div>
-                <div style="background: #0f172a; border-left: 4px solid #10b981; padding: 12px 16px; border-radius: 0 6px 6px 0;">
-                    <strong style="color: #10b981; font-size: 0.88rem;">What Low Readings Mean (Plain English):</strong><br>
-                    <span style="color: #cbd5e1; font-size: 0.86rem; line-height: 1.45;">{g['low_meaning']}</span>
-                </div>
-            </div>
-            <div style="background: #0f172a; border-left: 4px solid #f59e0b; padding: 12px 16px; border-radius: 0 6px 6px 0; margin-top: 10px;">
-                <strong style="color: #f59e0b; font-size: 0.88rem;">Operational Traps & Failure Modes (QC Alert):</strong><br>
-                <span style="color: #cbd5e1; font-size: 0.86rem; line-height: 1.45;">{g['common_pitfalls']}</span>
-            </div>
-            <div style="color: #64748b; font-size: 0.80rem; margin-top: 8px;">
-                <strong>Literature Citation:</strong> {g['reference']}
-            </div>
-            """), unsafe_allow_html=True)
+        with st.expander("View Full Action Required Table", expanded=True):
+            display_cols = ["Depth Interval (ft)", "Thickness", "Primary Anomaly", "Severity", "Why Review is Required (Plain English)", "Recommended Action"]
+            st.dataframe(rev_df[display_cols], use_container_width=True, hide_index=True)
+    else:
+        st.success("No critical depth intervals flagged for manual review. Formation evaluation logs are on-gauge and within nominal sensor tolerances.")
 
-    # 3. Master Reference for All Standard Logs
-    with st.expander("View Complete Petrophysical Reference for All 24 Standard Wireline Logs (Min & Max Bounds Included)", expanded=False):
-        all_guides_df = get_guide_comparison_dataframe()
-        st.dataframe(all_guides_df, use_container_width=True, hide_index=True)
-        st.caption("Includes comprehensive formation evaluation logs (Spectral Gamma Ray CGR, Laterologs LLD/LLS, Sonic DTS, Density Correction DRHO, Timur Permeability, NMR Porosity, Cable Tension) for complete exploration context.")
-
-    # ── EXPORT DELIVERABLES ───────────────────────────────────────────────────
-    render_section_header("Export Deliverables & Reports", "download")
+    # ── 7. EXPORT DELIVERABLES & REPORTS (LAST) ──────────────────────────────
+    render_section_header("Export Deliverables & Reports", "download", "Download structured CSV formation deliverables or print a complete engineering report")
     e1, e2, e3, e4, e5 = st.columns(5)
     with e1:
         if flags is not None and len(flags) > 0:
@@ -913,14 +840,6 @@ if st.session_state.analysis_done and prox is not None:
                 use_container_width=True
             )
     with e4:
-        st.download_button(
-            "Export Curve Guide (CSV)",
-            guide_table_df.to_csv(index=False).encode(),
-            f"{active_res.well_name}_curve_guide.csv",
-            "text/csv",
-            use_container_width=True
-        )
-    with e5:
         if cross_corr and cross_corr.get("cross_corr_df") is not None:
             st.download_button(
                 "Export Multi-Curve Ledger (CSV)",
@@ -929,3 +848,6 @@ if st.session_state.analysis_done and prox is not None:
                 "text/csv",
                 use_container_width=True
             )
+    with e5:
+        if st.button("Print Formation Report", key="btn_print_formation_report", type="primary", use_container_width=True):
+            st.components.v1.html("<script>window.parent.print();</script>", height=0)
